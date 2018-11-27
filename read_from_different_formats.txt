@@ -1,0 +1,22 @@
+#for semi structured and structured data we use SparkSQL, which uses sqlContext
+help(sqlContext) #focus on read and load API.
+
+#load 
+help(sqlContext.load)
+
+#read
+help(sqlContext.read)
+
+#json, orc, parquet and text can be read directly using sqlContext but for AVRO we need 3rd party library.
+
+#you can use any of the following ways to load data from HDFS.
+sqlContext.load("/public/retail_db_json/order_items", "json").show() #Show will just return 20 records
+OR
+sqlContext.read.json("/public/retail_db_json/order_items").show()
+
+sqlContext.read.parquet("/user/randeep89/sqoop_import/retail_db/departments").show()
+OR
+sqlContext.load("/user/randeep89/sqoop_import/retail_db/departments", "parquet").show()
+
+
+
