@@ -1,0 +1,21 @@
+list_sample = range (1, 1000)
+list_rdd = sc.parallelize(list_sample)
+type(list_rdd)
+
+
+#Now creating RDD from the local file system
+
+#following line opens and reads the file and splits it line wise.
+productsRaw = open("/data/retail_db/products/part-00000").read().splitlines()
+
+type(productsRaw) #verifying type
+
+prdd = sc.parallelize(productsRaw) # use parallelize to convert list into RDD
+
+type(prdd)
+
+prdd.first() #returns first element of the RDD
+
+prdd.take(10) #returns first 10 elements of the RDD
+
+prdd.count() # returns count of the total elements in the RDD.
