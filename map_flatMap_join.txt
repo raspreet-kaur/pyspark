@@ -1,0 +1,13 @@
+#map, Return a new distributed dataset formed by passing each element of the source through a function func.
+#flatMap, Similar to map, but each input item can be mapped to 0 or more output items (so func should return a Seq rather than a single item).
+
+#let take famous example of word count
+
+my_list = ["hi", "hello word", "hello spark", "hi pyspark"]
+
+list_rdd = sc.parallelize(my_list)
+
+word_count = list_rdd.flatMap(lambda rec : rec.split(" ")). \ 
+map(lambda rec : (rec,1)). \
+reduceByKey(lambda a, b : a+b). \ #where a is accumlative value and b is current value
+collect()
