@@ -1,0 +1,17 @@
+#pandas approach –  Get revenue for each order id from order_items
+#We will actually look into pandas in detail as part of next chapter
+#Create list for column names
+#Pass path and column names to pandas read_csv function to create data frame
+#We can refer attributes in data frames using names
+#Apply group by function to group data using order item order id and invoke aggregate function sum on order item subtotal – this will return a new data frame which contain order item order id and revenue.
+
+ordersPath = "/data/retail_db/order_items/part-00000"
+
+import pandas as pd
+
+colNames = ["order_item_id", "order_item_order_id", "order_item_product_id",
+         "order_item_quantity", "order_item_subtotal", "order_item_product_price"]
+data = pd.read_csv(ordersPath, names = colNames)
+
+revenue = data.groupby("order_item_order_id")["order_item_subtotal"].sum()
+revenue
