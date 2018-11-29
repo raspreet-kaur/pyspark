@@ -1,0 +1,97 @@
+data is loaded into memory for RDD to process.
+
+It depends upon the server's capacity, use following commands to see the capacity.
+
+lscpu
+free -h
+
+hdfs fsck /public/retail_db/part-m-00000 -files -blocks -locations
+
+sc.setLogLevel("INFO")
+
+pyspark.rdd.RDD , its a plain RDD, it gets created when we first load the data into RDD.
+pyspark.rdd.PiplinedRDD , it gets created as a result of transformation on another RDD.
+
+>>> text = sc.textFile("/user/randeep89/big.txt")
+>>> word_count = text.flatMap(lambda o : o.split(" ")).map(lambda o : (o,1)).reduceByKey(lambda a, b: a+b)
+>>> word_count.saveAsTextFile("/user/randeep89/wc01")
+
+NUMBER OF TASKS DEPENDS UPON THE NUMBER OF BLOCKS OF A FILE
+
+>>> from pyspark import StorageLevel as sl
+
+rdd.persist(storagelevel.MEMORY_ONLY) #now go to spark web UI and check storage tab. #USE THIS IF YOU AND TO PROCESS SAME DATA AGAIN AND AGAIN.
+							MEMORY_AND_DISK
+							DISK_ONLY
+rdd.count()
+
+rdd.toDebugString() #returns a DAG 
+
+
+RDD, Data Frame, DAG and Lazy Evaluation
+JULY 30, 2018 By dgadiraju Leave a Comment
+
+Topic Progress:       
+← Back to Lesson
+Now let us see details about data structures in Spark such as Resilient Distributed Datasets, Data Frames, Directed Acyclic Graph, Lazy Evaluation etc.
+
+Data Structures – RDD and Data Frames
+Quick overview about APIs – Transformations and Actions
+Directed Acyclic Graph and Lazy Evaluation
+
+
+Resilient Distributed Datasets
+Resilient Distributed Datasets (in short RDD) is the fundamental data structure in Spark.
+
+In-memory
+Distributed
+Resilient
+Data from files will be divided into RDD partitions and each partition is processed by separate task
+By default it will use HDFS block size (128 MB) to determine partition
+We can increase (cannot decrease) number of partitions by using additional parameter in sc.textFile
+By default when data is loaded into memory each record will be serialized into Java object
+We can persist the RDD partitions at different storage levels
+MEMORY_ONLY (default)
+MEMORY_AND_DISK
+DISK_ONLY
+and more
+Data Frames
+Many times data will have structure. Using RDD and then core APIs is some what tedious and cryptic. We can use Data Frames to address these issues. Here are the some of the advantages using Data Frames
+
+Flexible APIs (Data Frame native operations as well as SQL)
+Code will be readable
+Better organized and manageable
+Uses latest optimizers
+Process data in binary format
+Can generate execution plans based on statistics collected
+We will talk about processing data using Data Frames in next chapter. For now we will be focusing on Core APIs
+
+Overview of Transformations and Actions
+Spark Core APIs are categorized into 2
+
+Transformations
+Row level transformations – map, flatMap, filter
+Joins – join, leftOuterJoin, rightOuterJoin
+Aggregations – reduceByKey, aggregateByKey
+Sorting data – sortByKey
+Group operations such as ranking – groupByKey
+Set operations – union, intersection
+and more
+Actions
+Previewing data – first, take, takeSample
+Converting RDD into typical collection – collect
+Total aggregations – count, reduce
+Total ranking – top
+Saving files – saveAsTextFile, saveAsNewAPIHadoopFile etc
+and more
+Transformations are the APIs which take RDD as input and return another RDD as output. These APIs does not trigger execution but update the DAG. Actions take RDD as input and return a primitive data type or regular collection to the driver program. Also we can use actions to save the output to the files. Actions trigger execution of DAG.
+
+Directed Acyclic Graph and Lazy Evaluation
+Thare are many APIs in Spark. But most of the APIs do not trigger execution of Spark job.
+
+When we create Spark Context object it will procure resources in the cluster
+APIs used to read the data such as textFile as well as to process the data such as map, reduce, filter etc does not trigger immediate execution. They create variables of type RDD which also point to DAG.
+They run in driver program and build DAG. DAG will tell how it should execute. Each variable have a DAG associated with it.
+When APIs which are categorized as action (such as take, collect, saveAsTextFile) are used DAG associated with the variable is executed.
+In Scala, we can look at the DAG details by using toDebugString on top of the variables created.
+We can visualize DAG as part of Spark UI
