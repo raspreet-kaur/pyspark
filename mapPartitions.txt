@@ -1,0 +1,66 @@
+#################################
+mapPartitions
+#################################
+APIs such as map, filter, flatMap work on individual records. We can implement any of this functionality using mapPartitions, but the difference is in its execution.
+
+For map, filter, flatMap – number of executions of lambda function is equal to number of records
+For mapPartitions – number of executions of lambda function is equal to number of partitions
+As part of the lambda function in mapPartitions
+Process data as collection
+Apply Python map or filter or flatten
+Return a collection
+The elements from the collection returned from lambda function will be added to RDD
+Use cases where mapPartitions can perform better – Looking up into a database. Instead of creating connection for each record, we can establish connection once per for each partition (if looking up into database is required as part of data processing)
+
+Looking up into a database using map needs as many connections as number of records.
+BUT USING mapPartitions the number of connection are equal to number of partitions.
+
+Here is the example of getting word count using mapPartitions
+
+lines = sc.textFile("/public/randomtextwriter/part-m-00000")
+
+def getTuples(i):
+	import itertools as it
+	tup = map(lambda o : (o,1), it.chain.from_iterable(map(lambda o : o.split(" "), i)))
+	return tup
+
+wc = lines.mapPartitions(lambda o : getTuples(o)).reduceByKey(lambda a,b : a+b)
+
+wc.take(10)
+
+#################################
+groupByKey (K,V) => (K,<iterable>V)
+#################################
+
+products = sc.textFile("/public/retail_db/products")
+products_filtered =  products.filter(lambda o : o.split(",")[4]!="")
+products_filtered.count()
+products_map = products_filtered.map(lambda o : (o.split(",")[1], o))
+products_GBK = products_map.groupByKey()
+
+
+def getTopN(products, n):
+	return sorted(products, key=lambda a :float(a.split(",")[4]), reverse = True)[:n])
+	
+topNProducts = products_GBK.flatMap(lambda p : getTopN(list(p[1]) , 4)) #using flatMap as we want to flatten the output, using map, it will provide output in collection.
+for i in topNProducts.take(100): print(i)
+
+##SO THE above solutioni will give you top n records, even if they prices are same.
+####################################
+##Let's develop the solution to get top n records with unique prices.
+
+products = sc.textFile("/public/retail_db/products")
+products_filtered =  products.filter(lambda o : o.split(",")[4]!="")
+products_filtered.count()
+products_map = products_filtered.map(lambda o : (float(o.split(",")[1]), o))
+products_GBK = products_map.groupByKey()
+
+def getTopN(products, n):
+	unique_prices = sorted(set(list(map(lambda a : float(a.split(",")[4]), products))),  reverse=True)[:4]
+	sorted_list = sorted(products, key = lambda p : float(p.split(",")[4]), reverse=True)
+	import itertools as it
+	return it.takewhile(lambda p : float(p.split(",")[4]) in unique_prices, sorted_list)
+	
+result = products_GBK.flatMap(lambda p : getTopN(list(p[1]), 4))
+
+for i in result.take(10): print(i)
