@@ -12,3 +12,14 @@ df = spark.read.csv('/public/retail_db/orders/',schema='id INT, date TIMESTAMP, 
 
 df = spark.read.csv('/public/retail_db/orders/', inferSchema=True)	#It will take schema from source
 
+
+/user/randeep89/s.csv ----->contains-----> 1%2013-07-25 00:00:00.0%11599%CLOSED
+
+>>> df = spark.read.csv('/user/randeep89/s.csv', sep='%', inferSchema=True)
+>>> df.show()
++---+-------------------+-----+------+
+|_c0|                _c1|  _c2|   _c3|
++---+-------------------+-----+------+
+|  1|2013-07-25 00:00:00|11599|CLOSED|
++---+-------------------+-----+------+
+
