@@ -1,0 +1,14 @@
+
+from pyspark.sql.types import *
+schema = StructType([
+     StructField("order_id", IntegerType(), True),
+     StructField("order_date", TimestampType(), True),
+     StructField("order_value", FloatType(), True),
+     StructField("order_status", StringType(), True)])
+	
+df = spark.read.csv('/public/retail_db/orders/', schema=schema) #in case table is big, better to use  from pyspark.sql.types import *
+
+df = spark.read.csv('/public/retail_db/orders/',schema='id INT, date TIMESTAMP, val FLOAT, status STRING') #defining column names with types
+
+df = spark.read.csv('/public/retail_db/orders/', inferSchema=True)	#It will take schema from source
+
