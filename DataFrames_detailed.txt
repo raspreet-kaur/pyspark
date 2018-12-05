@@ -1,0 +1,14 @@
+df.select('order_id', 'order_date').show() 	#some functions take column names as literals.
+df.select(df.order_id, df.order_date).show()#some functions take dfname with column name.
+So, be careful while using, SELECT accepts in both the ways.
+
+df.select('*') # to get all the data.
+from pyspark.sql import functions as f
+orders.select('id', 'date', f.date_format(orders.date, "YYYYMM").alias('date_month')).show()
+
+selectExpr # lets you sql type sytanx
+
+orders.selectExpr('date_format(order_date, "YYYYMM") as new').show() # you don't need import pyspark.sql.functions in this case.
+
+BY DEFAULT join uses 200 thread to make it faster but based on your data you can use following
+	spark.conf.set('spark.sql.shuffle.partions', '1')
