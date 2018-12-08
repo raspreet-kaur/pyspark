@@ -20,3 +20,7 @@ sqlContext.load("/user/randeep89/sqoop_import/retail_db/departments", "parquet")
 
 
 
+
+
+
+
