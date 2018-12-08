@@ -46,6 +46,24 @@ EXAMPLE to write data in RDBMS using JDBC
     jdbc("jdbc:mysql://ms.itversity.com", "retail_export.spk_exp", mode='append', \
 	properties={"user": "retail_user", "password": "itversity", "driver":"com.mysql.jdbc.Driver"})
 
+	
+EXAMPLE TO read/write from HIVE
+
+	orders = spark.read. \
+	format('hive'). \
+	table('bootcampdemo.orders_hive')
+
+	orders = spark.read.table('bootcampdemo.orders_hive')
+	a.write.saveAsTable('orders_r.randeep.tmp')
+
+EXAMPLE to read/write avro
+	#first launch pyspark with --packages com.databricks:spark-avro_2.11:4.0.0 or with --jar if you are given jars
+	pyspark --master yarn --conf spark.ui.port=12934 --num-executors 1 --executor-memory 512M --packages com.databricks:spark-avro_2.11:4.0.0
+	a = spark.read.format('com.databricks.spark.avro').load('/user/randeep89/bootcampdemo/pyspark/orders_avro/part-00000-e1cbb7c8-ec4b-4bdd-8aba-bfdade84efc4-c000.avro
+	orders.write.format('com.databricks.spark.avro').mode('overwrite').save('/user/randeep89/temmp')
+
+
+	
 
 
 
