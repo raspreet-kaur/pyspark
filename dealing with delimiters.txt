@@ -1,0 +1,78 @@
+Overview of write APIs – dataframe.write
+Overview of read APIs – spark.read
+Supported file formats
+	csv, text (for text file formats)
+	json (using complex schema)
+	orc
+	parquet
+	avrò (3rd party)
+Supported file formats – csv, text json, orc, parquet etc.
+We can also write data to 3rd party supported file formats such as avro
+Data can be written to Hive tables as well		####use df.write.insertInto(), saveAsTable
+We can also connect to relational databases over JDBC and save our output into remote relational databases.		####use df.write.jdbc()
+
+Following are the approaches to write data.
+	DF.write.json(PATH)
+	DF.write.format('json').save(PATH) #used mostly for 3rd party like avro.
+	DF.write.mode('append').parquet(PATH)
+	
+EXAMPLE to write data in json format
+	orders = spark.read.csv('/public/retail_db/orders').toDF('order_id','order_date','order_customer_id','order_status')
+	from pyspark.sql.types import *
+	oDF = orders.withColumn('order_id', orders.order_id.cast(IntegerType())). \
+	withColumn('order_customer_id', orders.order_customer_id.cast(IntegerType()))
+	orders.write.json('/user/randeep89/temmp/', mode='append')
+	orders.write.format('json').save('/user/randeep89/temmp/')
+	
+EXAMPLE to write data in RDBMS using JDBC
+
+	#launch pyspark with --jar
+	pyspark --master yarn --conf spark.ui.port=12302 --num-executors 1 --executor-memory 512M --jars /usr/hdp/2.6.5.0-292/sqoop/lib/mysql-connector-java.jar
+	
+	orders = spark.read.csv('/public/retail_db/orders').toDF('order_id','order_date','order_customer_id','order_status')
+	
+	oDF.write.jdbc("jdbc:mysql://ms.itversity.com/retail_export", 'retail_export.spk_exp', properties= {'user':'retail_user', 'password':'itversity'})
+	#create table with same column names in Mysql.
+	create table spk_exp (order_id int, order_date varchar(30), order_customer_id int, order_status varchar(20))
+
+	orders.write.format('jdbc'). \
+	options(url='jdbc:mysql://ms.itversity.com/retail_export', \
+	driver='com.mysql.jdbc.Driver', \
+	dbtable='spk_exp', \
+	user='retail_user',password='itversity') \
+	.mode('append').save()
+	
+	orders.write. \
+    jdbc("jdbc:mysql://ms.itversity.com", "retail_export.spk_exp", mode='append', \
+	properties={"user": "retail_user", "password": "itversity", "driver":"com.mysql.jdbc.Driver"})
+
+	
+EXAMPLE TO read/write from HIVE
+
+	orders = spark.read. \
+	format('hive'). \
+	table('bootcampdemo.orders_hive')
+
+	orders = spark.read.table('bootcampdemo.orders_hive')
+	a.write.saveAsTable('orders_r.randeep.tmp')
+
+EXAMPLE to read/write avro
+	#first launch pyspark with --packages com.databricks:spark-avro_2.11:4.0.0 or with --jar if you are given jars
+	pyspark --master yarn --conf spark.ui.port=12934 --num-executors 1 --executor-memory 512M --packages com.databricks:spark-avro_2.11:4.0.0
+	a = spark.read.format('com.databricks.spark.avro').load('/user/randeep89/bootcampdemo/pyspark/orders_avro/part-00000-e1cbb7c8-ec4b-4bdd-8aba-bfdade84efc4-c000.avro
+	orders.write.format('com.databricks.spark.avro').mode('overwrite').save('/user/randeep89/temmp')
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
