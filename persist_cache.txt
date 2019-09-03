@@ -12,6 +12,9 @@ from pyspark.storagelevel import StorageLevel
 
 DF/rdd.persist(StorageLevel.MEMORY_ONLY) #now go to spark web UI and check storage tab. #USE THIS IF YOU AND TO PROCESS SAME DATA AGAIN AND AGAIN.
 DF/rdd.persist(StorageLevel(True, True, False, False, 1))
+
+The following code block has the class definition of a StorageLevel −
+class pyspark.StorageLevel(useDisk, useMemory, useOffHeap, deserialized, replication = 1)
 							
 use the RDD.unpersist() method
 
