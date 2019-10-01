@@ -1,0 +1,52 @@
+Schema
+	This is the great difference between RDD and DataFrame/Dataset.
+	
+	RDD has no schema. It fits well with unstructured data.
+	
+	DataFrame/Dataset are more for structured data.
+	The schema gives an expressive way to navigate inside the data.
+	
+	
+Level
+	RDD is a low level API whereas DataFrame/Dataset are high level APIs.
+	With RDD, you have more control on what you do.
+	
+	
+Performance
+	A DataFrame/Dataset tends to be more efficient than an RDD.
+	
+	What happens inside Spark core is that a DataFrame/Dataset is converted into an optimized RDD.
+	Spark analyses the code and chooses the best way to execute it.
+	
+	For instance, if you want to group data before filtering it, it is not efficient. 
+	You group a bigger bunch of data than you need because you filter them after.
+	If you do this with an RDD, Spark will execute this way.
+	But, if you do the same with a DataFrame/Dataset,
+	Spark will optimize the execution and will filter your data before grouping them. 
+	This is what we call the “Catalyst optimization”.
+
+	
+Type-safe and errors
+	RDD and Datasets are typed safe (for typed languages).
+
+	In the other hand, a DataFrame is not typed.
+	This is a great plus for Dataset which is typed.
+	As we have already seen it, with a DataFrame, you can select a nonexistent column (df.select(“nonExistentColumn”))
+	and notice your mistake only when you run your code. With a Dataset, you have a compile time error.
+	
+	You can notice that “DataFrame” is an alias for “Dataset[Row]”.
+	It could be useful to do a first migration from 1.6 to 2 for instance in Java which does not have DataFrame anymore in the latest versions.
+	But then, it is a better option to type Datasets in another type than “Row”.
+	
+	This way, we can get real analysis errors at compilation time. Once again, this is not true for languages that do not compile.
+
+	
+Conclusion
+	RDD are typed and offer a way to get analysis errors at compile time.
+	It is a low level API with no performance optimization. 
+	It is less expressive too and is more useful for unstructured data.
+	
+	DataFrame is more expressive and more efficient (Catalyst Optimizer).
+	However, it is untyped and can lead to runtime errors.
+	
+	Dataset looks like DataFrame but it is typed. With them, you have compile time errors. And that is the point.
