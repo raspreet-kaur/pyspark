@@ -1,0 +1,83 @@
+what is RDD?
+	Resilient Distributed Datasets (RDD) is a fundamental data structure of Spark.
+  It is an immutable distributed collection of objects. 
+  Each dataset in RDD is divided into logical partitions, which may be computed on different nodes of the cluster.
+  RDDs can contain any type of Python, Java, or Scala objects, including user-defined classes.
+  
+what is spark context?
+	SparkContext (aka Spark context) is the entry point to the services of Apache Spark (execution engine) 
+  and so the heart of a Spark application.
+	Spark context sets up internal services and establishes a connection to a Spark execution environment.
+	Once a SparkContext is created you can use it to invoke spark APIs and 
+  access Spark services and run jobs (until SparkContext is stopped).
+  
+what is Executor?
+	Executors are worker nodes' processes in charge of running individual tasks in a given Spark job.
+  They are launched at the beginning of a Spark application and typically run for the entire lifetime of an application.
+  Once they have run the task they send the results to the driver. 
+  They also provide in-memory storage for RDDs that are cached by user programs.
+  
+what is DAG?
+	it enables lazy evaluation.
+  
+what is executor cores?
+	The cores property controls the number of concurrent tasks an executor can run.
+  --executor-cores 5 means that each executor can run a maximum of five tasks at the same time.
+  
+what is driver?
+	The driver is the process where the main method runs.
+  
+what is cluster manager?
+	manages the cluster and keeps track of all the worker nodes and its resources. It creates application master on spark-submit
+  
+what is application master?
+	its created on spark-submit and negotiates resources with YARN/Cluster manager and also assigns tasks to the executors.
+  
+what is data frame?
+	A Spark DataFrame is a distributed collection of data organized into named columns 
+  that provides operations to filter, group, or compute aggregates, and can be used with Spark SQL by registering temp views. 
+  DataFrames can be constructed from structured data files, existing RDDs, tables in Hive
+
+What is the difference between splitable and non-splitable compressions?
+	Splitable compressions can be split into blocks whereas non-splitable cannot be.
+
+Explain the Apache Spark Architecture. How to Run Spark applications?
+	Apache Spark application contains two programs namely a Driver program and Workers program.	
+	A cluster manager will be there in-between to interact with these two cluster nodes.
+  Spark Context will keep in touch with the worker nodes with the help of Cluster Manager.	
+	Spark Context is like a master and Spark workers are like slaves.	
+	Workers contain the executors to run the job. If any dependencies or arguments have to be passed then,
+  Spark Context will take care of that. RDD’s will reside on the Spark Executors.
+	
+Accumulators 
+	They are also known as Shared Variables. 	
+	Accumulators is a shared variable which can be used to implement counters with in the Spark application, primarily for sanity checks.
+	Accumulators will be passed to executors and scope is managed across all the executors or executor tasks
+	Accumulators can be used in any Spark APIs
+	sc.accumulator() is the API to create accumulator
+	In any Spark API, we can increment the accumulator
+	As Python lambda functions directly cannot increment accumulator we will create a function which will be invoked as part of the Spark API such as map, filter etc.
+	
+Known issues with accumulators
+	Unless tasks are executed you will not see details about counters
+	Spark guarantees accumulators to be updated only in first execution
+	If any task is re-executed the results can be inconsistent
+	The issue is prevalent in both transformations and actions
+	You will not be able to see accumulator details as part of Spark UI for pyspark applications.
+  However, you can read the variables after performing the action with in the program.
+	
+Broadcast Variables.	
+	while broadcast variables are used for lookups.
+	Broadcast Variable is another type of shared variable which can be broadcasted into all the executors
+  and can access at runtime by tasks while processing data.
+  It is typically used to replace joins with lookups when a very large data set is joined with small data set
+  which can fit into the memory of executor JVM.	
+  
+	A broadcast variable can be of preliminary type or it could be a hash map
+	Here are few examples
+		Single value – Common discount percent for all the products
+		Hash map – look up or map side join
+	When very large data set (fact) is tried to join with smaller data set (dimension), broadcasting dimension can have considerable performance improvement.
+	Broadcast variables are immutable
+	We can read data from HDFS or local file system or even as configuration parameters
+	Broadcast using broadcast method of Spark Context
