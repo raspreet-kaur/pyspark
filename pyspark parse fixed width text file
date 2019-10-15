@@ -1,0 +1,18 @@
+Spark's substr function can handle fixed-width columns, for example:
+
+df = spark.read.text("/tmp/sample.txt")
+df.select(
+    df.value.substr(1,3).alias('id'),
+    df.value.substr(4,8).alias('date'),
+    df.value.substr(12,3).alias('string'),
+    df.value.substr(15,4).cast('integer').alias('integer')
+).show()
+will result in:
+
++---+--------+------+-------+
+| id|    date|string|integer|
++---+--------+------+-------+
+|001|01292017|   you|   1234|
+|002|01302017|    me|   5678|
++---+--------+------+-------+
+Having splitted columns you can reformat and use them as in normal spark dataframe.
