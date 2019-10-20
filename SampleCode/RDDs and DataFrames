@@ -1,0 +1,99 @@
+Difference between Python list and RDD
+
+  Python list is nothing but a heap of elements.
+  We can manipulate Python list using APIs such as map, filter, reduce, set, sort, sorted etc.
+  Python list is typically processed in a linear fashion
+  RDD stands for Resilient Distributed Dataset. It is nothing but a distributed list.
+  RDD is a distributed collection or list provided as part of Spark.
+  APIs on RDD facilitate us to process it in a distributed fashion.
+  We can manipulate Spark RDD using RDD functions such as map, flatMap, filter, reduceByKey etc.
+  Spark gives us the desired scalability as APIs will process RDD in distributed fashion.
+  
+Resilient Distributed Datasets
+
+Resilient Distributed Datasets (in short RDD) is the fundamental data structure in Spark. 
+On top of SparkContext (sc) we have several APIs to create RDD using data from files.
+  textFile
+  sequenceFile
+  Hadoop related APIs
+These APIs will not trigger execution immediately. They will update the DAG and we need to perform actions to trigger execution.
+We can use APIs such as take(10) to preview the data from RDD. We cannot perform traditional list operations such [:10] on RDD.
+Characteristics of RDD
+  In-memory
+  Distributed
+  Resilient
+  
+Execution Life Cycle
+  Data from files will be divided into RDD partitions and each partition is processed by a separate task
+  By default, it will use HDFS block size (128 MB) to determine the partition size
+  We can increase (cannot decrease) number of partitions by using an additional parameter in sc.textFile
+  By default when data is loaded into memory each record will be serialized into Java object 
+  
+RDD Persistence
+Typically data will not be loaded into memory immediately when we create RDD as part of the program.
+It will be processed in real time by loading data into memory as it is processed.
+If we have to retain RDD in memory for an extended period of time, then we have to use RDD Persistence. 
+
+Let us see what happens when RDD is loaded into memory
+  Serialize into Java Objects
+  Get into memory
+  As data is processed RDD  partitions will be flushed out of memory as tasks are completed.
+We can persist the RDD partitions at different storage levels
+  MEMORY_ONLY (default)
+  MEMORY_AND_DISK
+  DISK_ONLY
+  and more
+ 
+ 
+ 
+Data Frames 
+
+Many times data will have structure.
+Using RDD and then core APIs is some what tedious and cryptic.
+We can use Data Frames to address these issues. Here are the some of the advantages using Data Frames
+  Flexible APIs (Data Frame native operations as well as SQL)
+  Code will be readable
+  Better organized and manageable
+  Uses latest optimizers
+  Process data in binary format
+  Can generate execution plans based on statistics collected (for permanent tables such as Hive tables)  
+  
+Overview of Transformations and Actions
+
+Spark Core APIs are categorized into Transformations and Actions.
+Transformations
+  Row level transformations – map, flatMap, filter
+  Joins – join, leftOuterJoin, rightOuterJoin
+  Aggregations – reduceByKey, aggregateByKey
+  Sorting data – sortByKey
+  Group operations such as ranking – groupByKey
+  Set operations – union, intersection
+  and more
+Actions
+  Previewing data – first, take, takeSample
+  Converting RDD into the typical collection – collect
+  Total aggregations – count, reduce
+  Total ranking – top
+  Saving files – saveAsTextFile, saveAsNewAPIHadoopFile etc
+  and more
+
+Transformations are the APIs which take RDD as input and return another RDD as output.
+These APIs does not trigger execution but update the DAG.
+Actions take RDD as input and return a primitive data type or regular collection to the driver program.
+Also, we can use actions to save the output to the files. Actions trigger execution of DAG.
+
+Directed Acyclic Graph and Lazy Evaluation
+
+Thare are many APIs in Spark. But most of the APIs do not trigger execution of Spark job.
+  When we create a Spark Context object it will procure resources from the cluster
+  
+  APIs used to read the data such as textFile as well as to process the data such as map, reduce, filter etc
+  does not trigger immediate execution. They create variables of type RDD which also point to DAG.
+  
+  They run in driver program and build DAG. DAG will tell how it should execute. Each variable have a DAG associated with it.
+  
+  When APIs which are categorized as action (such as take, collect, saveAsTextFile) are used DAG associated with the variable is executed.
+  
+  In Scala, we can look at the DAG details by using toDebugString on top of the variables created.
+  
+  We can visualize DAG as part of Spark UI
