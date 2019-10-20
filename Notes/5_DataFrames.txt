@@ -1,0 +1,85 @@
+getOrCreate API ->creates sparkContext object , then will create a wrapper on top of it with name spark of type Spark session 
+
+if a spark session already exists then it get that , or else it will create .
+
+spark.sparkContext() 
+
+if each record is variable line then read.csv or read.text wont work
+if separator is present then read.csv is better, is data is fixed length/structure may b without delimiters then read.text can be used , 
+
+
+ordersDF= spark.read.csv("/public/retail_db/orders").toDF('order_id','order_date','order_customer_id','order_status')
+
+
+reading data from Hive
+
+We can use spark.read.table to read data from Hive tables into Data Frame
+We can prefix database name to table name while reading Hive tables into Data Frame
+We can also run Hive queries directly using spark.sql
+Both spark.read.table and spark.sql returns Data Frame
+
+orders = spark.read.table("bootcampdemo.orders")
+orders.printSchema()
+orders.show()
+
+orders = spark.sql("select * from bootcampdemo.orders") //gives DataFrame
+
+
+Reading data from MySQL over JDBC
+
+Spark also facilitate us to read data from relational databases over JDBC
+
+orders = spark.read. \
+  format('jdbc'). \
+  option('url', 'jdbc:mysql://ms.itversity.com'). \
+  option('dbtable', 'retail_db.orders'). \
+  option('user', 'retail_user'). \
+  option('password', 'itversity'). \
+  load()
+  
+while launching pyspark need to specify connector
+
+We need to make sure jdbc jar file is registered using --packages or --jars and --driver-class-path while launching pyspark
+
+pyspark --master yarn \
+--conf spark.ui.port= 12901 \
+--jars /usr/share/java/mysql-connector-java.jar \
+--driver-class-path /usr/share/java/mysql-connector-java.jar
+
+Reading Data and Creating Data Frames - Functions to manipulate data
+
+Main package for functions pyspark.sql.functions
+We can import by saying from pyspark.sql import functions as sf
+You will see many functions which are similar to the functions in traditional databases.
+These can be categorized into
+	String manipulation
+	Date manipulation
+	Type casting
+	Expressions such as case when
+We will see some of the functions in action
+	substring
+	lower, upper
+	trim
+	date_format
+	trunc
+	Type Casting
+	case when
+
+
+from pyspark.sql import functions
+
+from pyspark.sql.functions import *
+
+orders.select(substring('order_date',1,7).alias('order_month')).show()
+orders.select(lower('orders.order_status')).show()
+
+can also use withColumn()
+
+difference is with Select , it will give only selected data but withColumn will give data the way it was earlier along with transformed data
+
+withColumn takes 2 columns (1st- alias, 2nd transformation on 1st col)
+
+orders.withColumn('order_status',lower(orders.order_status)).show()
+
+
+orders.withColumn('order_month',date_format(orders.order_date,'YYYYMM')).show()

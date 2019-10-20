@@ -1,0 +1,8 @@
+Spark SQL – Analytics Functions 
+
+divided into 3->Aggregations, Ranking and Windowing Functions
+
+There are multiple clauses with in SQL to accomplish these
+	over
+	partition by
+	order by

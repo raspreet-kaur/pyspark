@@ -1,0 +1,83 @@
+DataFrames-OverView
+
+Data Frames is nothing but RDD with structure.
+
+Data Frame can be created on any data set which have structure associated with it.
+Attributes/columns in a data frame can be referred using names.
+One can create data frame using data from files, hive tables, relational tables over JDBC.
+Common functions on Data Frames
+	printSchema – to print the column names and data types of data frame
+	show – to preview data (default 20 records)
+	describe – to understand characteristics of data
+	count – to get number of records
+	collect – to convert data frame into Array
+Once data frame is created, we can process data using 2 approaches.
+	Native Data Frame APIs
+	Register as temp table and run queries using spark.sql
+To work with Data Frames as well as Spark SQL, we need to create object of type SparkSession
+
+Once the SparkSession object is created we can use APIs under spark.read to create data frame or use spark.sql to run queries on hive tables or temp tables.
+
+We can use spark.read.csv or spark.read.text to read text data.
+spark.read.csv can be used for comma separated data. Default field names will be in the form of _c0, _c1 etc
+spark.read.text can be used to read fixed length data where there is no delimiter. Default field name is value.
+	We can define attribute names using toDF function
+
+ordersDF= spark.read.csv("/public/retail_db/orders")
+ordersDF.printSchema()
+
+root
+ |-- _c0: string (nullable = true)
+ |-- _c1: string (nullable = true)
+ |-- _c2: string (nullable = true)
+ |-- _c3: string (nullable = true)
+
+ordersDF= spark.read.text("/public/retail_db/orders")
+ordersDF.printSchema()
+
+root
+ |-- value: string (nullable = true)
+ 
+ordersDF= spark.read.csv("/public/retail_db/orders").toDF('order_id','order_date','order_customer_id','order_status')
+
+root
+ |-- order_id: string (nullable = true)
+ |-- order_date: string (nullable = true)
+ |-- order_customer_id: string (nullable = true)
+ |-- order_status: string (nullable = true)
+ 
+ordersDF.select('order_id','order_date') //will tell its a dataframe with those column data types
+
+ordersDF.select('order_id','order_date').show() //by default shows first 20 records
+
+ordersDF.select('order_id','order_date').show(100)
+
+for i in ordersDF.select('order_id','order_date') .take(20):print(i)
+
+orders.describe() //dataframe [summary of all cols data types]
+
+orders.describe().show()
+
++-------+------------------+--------------------+-----------------+---------------+
+|summary|          order_id|          order_date|order_customer_id|   order_status|
++-------+------------------+--------------------+-----------------+---------------+
+|  count|             68883|               68883|            68883|          68883|
+|   mean|           34442.0|                null|6216.571098819738|           null|
+| stddev|19884.953633337947|                null|3586.205241263963|           null|
+|    min|                 1|2013-07-25 00:00:...|                1|       CANCELED|
+|    max|              9999|2014-07-24 00:00:...|             9999|SUSPECTED_FRAUD|
++-------+------------------+--------------------+-----------------+---------------+
+
+ordersDF.count() 
+
+once DF is created, can be processed using 2 approaches -one using native DF APIs
+ex-
+ordersDF.select('order_id','order_date').show()
+
+2nd approach is register this DF as TEMP Table and eegister queries against it
+
+ordersDF.createTempView('orders')
+spark.sql('select * from orders').show()
+
+
+

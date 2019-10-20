@@ -1,0 +1,162 @@
+orders.createTempView
+
+orders.createOrReplaceTempView (views with same name if tempview already exists)
+
+
+orders.createOrReplaceTempView('orders')
+
+orderItems.createOrReplaceTempView('order_items')
+
+spark.sql("show tables") --using default schema
+
+spark.sql("create database rpDemo")
+
+spark.sql("select * from orders").show()
+
+spark.sql("show tables").show()
+
+spark.sql("create table orders_hive as select * from orders").show()
+
+for i in spark.sql("describe formatted orders_hive").collect():print(i)
+
+spark.sql("describe formatted orders_hive").show()
+
+'hdfs://nn01.itversity.com:8020/apps/hive/warehouse/rp_sqoop_import.db/orders_hive'
+
+for f in spark.sql("show functions").collect(): print(f)
+
+for f in spark.sql("describe function substring").collect(): print(f)
+
+spark.sql("select substring('hello world',7,3)").show()
+
+As part of SparkSession object’s read, there is an API which facilitate us to read raw data from Hive table into Data Frame
+
+spark.read.table("rp_sqoop_import.orders_hive").show()
+
+write package of data frame provides us APIs such as saveAsTable, insertInto etc to directly write data frame into Hive table
+
+help(spark.read)
+
+df = spark.sql("show tables")
+
+help(df.write)
+
+Selection or Projection – select clause
+
+spark.sql('select order_id, order_date from orders').show()
+
+spark.sql('select date_format(current_date,"YYYYMM") as formatted_date').show()
+
+spark.sql('select substring(order_date, 1, 7) as order_month from orders').show()
+
+Filtering data – where clause
+
+spark.sql('select * from orders where order_status = "COMPLETE"').show()
+
+# Get orders which are either COMPLETE or CLOSED
+
+spark.sql('select * from orders where order_status = "COMPLETE" or order_status = "CLOSED"').show()
+
+spark.sql('select * from orders where order_status in("COMPLETE","CLOSED")').show()
+
+# Get orders which are either COMPLETE or CLOSED and placed in month of 2013 August
+
+spark.sql('select * from orders where order_status in ("COMPLETE", "CLOSED") and order_date like "2013-08%"').show()
+
+spark.sql('select * from orders where date_format(order_date, "YYYY-MM")="2013-08"').show() 
+
+# Get order items where order_item_subtotal is not equal to product of order_item_quantity and order_item_product_price
+
+spark.sql('select * from order_items where order_item_subtotal != round(order_item_quantity * order_item_product_price, 2)').show()
+			 
+# Get all the orders which are placed on first of every month
+spark.sql('''select * from orders 
+             where date_format(order_date, "dd") = "01"''').show()	
+
+Joining Data Sets
+
+# Get all the orders where there are no corresponding order_items
+
+spark.sql('select * from orders o left outer join order_items oi '
+          'on o.order_id = oi.order_item_order_id '
+          'where oi.order_item_order_id is null'). \
+  show()
+
+legacy syntax ??
+
+We can perform joins using ascii syntax with join along with on clause ??
+
+# Get all the orders where there are no corresponding order_items
+
+spark.sql('select * from orders o left outer join order_items oi '
+          'on o.order_id = oi.order_item_order_id '
+          'where oi.order_item_order_id is null'). \
+  show()
+  
+  
+# Check if there are any order_items where there is no corresponding order in orders data set
+
+spark.sql('select * from orders o right outer join order_items oi '
+          'on o.order_id = oi.order_item_order_id '
+          'where o.order_id is null'). \
+  show()
+
+Aggregations using group by and functions  
+
+# Get count by status from orders
+spark.sql('select order_status, count(1) status_count '
+          'from orders group by order_status'). \
+  show()
+  
+# Get revenue for each order id from order items 
+spark.sql('select order_item_order_id, sum(order_item_subtotal) order_revenue '
+          'from order_items group by order_item_order_id'). \
+  show()  
+			 
+# Get daily product revenue 
+# filter for complete and closed orders
+# groupBy order_date and order_item_product_id
+# Use agg and sum on order_item_subtotal to get revenue
+
+spark.conf.set('spark.sql.shuffle.partitions', '2')
+
+spark.sql('select o.order_date, oi.order_item_product_id, '
+          'round(sum(oi.order_item_subtotal),2) as  order_revenue '
+          'from orders o join order_items oi '
+          'on o.order_id = oi.order_item_order_id '
+          'where o.order_status in ("COMPLETE", "CLOSED") '
+          'group by o.order_date, oi.order_item_product_id'). \
+  show()			 
+  
+  
+Sorting data 
+
+We can perform composite sorting by using multiple fields
+
+# Sort orders by status
+spark.sql('''select * from orders 
+             order by order_status''').show()
+			 
+#Sort orders by date and then by status
+spark.sql('''select * from orders 
+             order by order_date, order_status''').show()
+
+# Sort order items by order_item_order_id and order_item_subtotal descending
+spark.sql('''select * from order_items 
+             order by order_item_order_id, order_item_subtotal desc''').show()	
+
+# Take daily product revenue data and 
+# sort in ascending order by date and 
+# then descending order by revenue.
+
+spark.conf.set('spark.sql.shuffle.partitions', '2')
+
+dailyProductRevenue = spark.sql('''select o.order_date, oi.order_item_product_id, 
+             round(sum(oi.order_item_subtotal), 2) as revenue
+             from orders o join order_items oi
+             on o.order_id = oi.order_item_order_id
+             where o.order_status in ("COMPLETE", "CLOSED")
+             group by o.order_date, oi.order_item_product_id
+             order by o.order_date, revenue desc''')
+
+dailyProductRevenue.show()			 

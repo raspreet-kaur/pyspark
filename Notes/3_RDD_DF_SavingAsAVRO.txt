@@ -1,0 +1,80 @@
+orders = sc.textFile("/public/retail_db/orders")
+orderItems = sc.textFile("/public/retail_db/order_items")
+ordersMap = ordersFiltered. \
+map(lambda o:(int(o.split(",")[0]),o.split(",")[1]))
+
+ordersItemsMap = orderItems. \
+map(lambda oi: (int(oi.split(",")[1]),(int(oi.split(",")[2]),float(oi.split(",")[4]))))
+
+ordersFiltered = orders. \
+filter(lambda o: o.split(",")[3] in ["COMPLETE", "CLOSED"])
+
+ordersMap = ordersFiltered. \
+map(lambda o:(int(o.split(",")[0]),o.split(",")[1]))
+
+ordersItemsMap = orderItems. \
+map(lambda oi: (int(oi.split(",")[1]),(int(oi.split(",")[2]),float(oi.split(",")[4]))))
+ordersJoin = ordersMap.join(ordersItemsMap)
+ordersJoinMap = ordersJoin.map(lambda x:( (x[1][0],x[1][1][0]),x[1][1][1]))
+
+
+from operator import add
+dailyRevenuePerProductId = ordersJoinMap.reduceByKey(add)
+productsRaw= open("/home/harshal_h/products/part-00000").\
+read().splitlines()
+
+products = sc.parallelize(productsRaw)
+productsMap = products.map(lambda p :(int(p.split(",")[0]),p.split(",")[2]))
+dailyRevenuePerProductIdMap = dailyRevenuePerProductId.map(lambda r:(int(r[0][1]),(r[0][0],r[1])))
+dailyRevenuePerProductJoin = dailyRevenuePerProductIdMap.join(productsMap)
+
+
+Incase of storing files in diff file formats, support for parquet and ORC is available but not AVRO, so for that,3rd part plugIn from dataBricks can be used, while doing spark Submit or launching pyspark
+Either packages info or jars info will be given
+--packages GroupId,artifactId and versionNo (thn will download the jar and register it pspark console and will understand related to this package)
+OR
+--jars<Path To Jar>
+
+pyspark --master yarn \
+	--conf spark.ui.port=12901 \
+	--num-executors 2 \
+	--executor-memory 512M \
+	--packages com.databricks:spark-avro_2.10:2.0.1
+	
+Use above code, run all
+
+storing in AVRO format also takes metadata, also uses DataFrame APIs to save in that format, we also have define structure
+
+dailyRevenuePerProduct = dailyRevenuePerProductJoin. \
+map(lambda t: 
+     ((t[1][0][0], -t[1][0][1]), (t[1][0][0], round(t[1][0][1], 2), t[1][1]))
+   )
+   
+dailyRevenuePerProductSorted = dailyRevenuePerProduct.sortByKey()
+
+dailyRevenuePerProductName = dailyRevenuePerProductSorted.\
+map(lambda r :r[1]) 
+
+dailyRevenuePerProductNameDF = dailyRevenuePerProductName.\
+toDF(schema=["order_date", "revenue_per_product","product_name"])
+
+//use Coalesce
+dailyRevenuePerProductNameDF = dailyRevenuePerProductName.\
+coalesce(2).\
+toDF(schema=["order_date", "revenue_per_product","product_name"])
+
+dailyRevenuePerProductNameDF.show() //to preview the data
+
+show() is DF API
+
+dailyRevenuePerProductNameDF.save("/user/harshal_h/dailyRevenuePerProduct_AVRO", "com.databricks.spark.avro")
+
+dailyRevenuePerProductNameDF.write.format("com.databricks.spark.avro").save("/user/harshal_h/dailyRevenuePerProduct_AVRO")
+
+sqlContext.load("/user/harshal_h/dailyRevenuePerProduct_AVRO","com.databricks.spark.avro").show()
+
+Saving Data from HDFS to local file system
+
+mkdir -p /home/harshal_h/dailyRevenuePython
+use copyToLocal
+

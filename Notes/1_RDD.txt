@@ -1,0 +1,84 @@
+orders = sc.textFile("/public/retail_db/orders")
+orderItems = sc.textFile("/public/retail_db/order_items")
+
+ordersFiltered = orders. \
+filter(lambda o: o.split(",")[3] in ["COMPLETE", "CLOSED"])
+
+ordersMap = ordersFiltered. \
+map(lambda o:(int(o.split(",")[0]),o.split(",")[1]))
+
+ordersItemsMap = orderItems. \
+map(lambda oi: (int(oi.split(",")[1]),(int(oi.split(",")[2]),float(oi.split(",")[4]))))
+
+for i in ordersMap.take(10):print(i)  //(order id and date)
+for i in ordersItemsMap.take(10):print(i) //(orderid, productid and subtotal)
+
+before Join make a paired RDD(with key and value)
+
+ordersJoin = ordersMap.join(ordersItemsMap)
+
+for i in ordersJoin.take(10):print(i)
+
+(65536, (u'2014-05-16 00:00:00.0', (957, 299.98)))
+(65536, (u'2014-05-16 00:00:00.0', (1014, 149.94)))
+(65536, (u'2014-05-16 00:00:00.0', (957, 299.98)))
+(65536, (u'2014-05-16 00:00:00.0', (1014, 149.94)))
+(4, (u'2013-07-25 00:00:00.0', (897, 49.98)))
+(4, (u'2013-07-25 00:00:00.0', (365, 299.95)))
+(4, (u'2013-07-25 00:00:00.0', (502, 150.0)))
+(4, (u'2013-07-25 00:00:00.0', (1014, 199.92)))
+(60076, (u'2013-10-22 00:00:00.0', (1004, 399.98)))
+(12, (u'2013-07-25 00:00:00.0', (957, 299.98)))
+
+ordersJoinMap = ordersJoin.map(lambda x:( (x[1][0],x[1][1][0]),x[1][1][1]))
+
+for i in ordersJoinMap.take(10):print(i)
+
+from operator import add
+dailyRevenuePerProductId = ordersJoinMap.reduceByKey(add)
+
+for i in dailyRevenuePerProductId.take(10):print(i)
+
+// reads data as string,splitlines splits per new line and makes it a collection(list)
+
+productsRaw= open("/home/harshal_h/products/part-00000").\
+read().splitlines()
+
+products = sc.parallelize(productsRaw)
+
+for i in products.take(10):print(i)
+
+productsMap = products.map(lambda p :(int(p.split(",")[0]),p.split(",")[2]))
+
+for i in productsMap.take(10):print(i)
+
+dailyRevenuePerProductIdMap = dailyRevenuePerProductId.map(lambda r:(int(r[0][1]),(r[0][0],r[1])))
+
+for i in dailyRevenuePerProductIdMap.take(10):print(i)
+
+dailyRevenuePerProductJoin = dailyRevenuePerProductIdMap.join(productsMap)
+
+for i in dailyRevenuePerProductJoin.take(10):print(i)
+
+dailyRevenuePerProduct = dailyRevenuePerProductJoin. \
+map(lambda t: 
+     ((t[1][0][0], -t[1][0][1]), t[1][0][0] + "," + str(t[1][0][1]) + "," + t[1][1]))
+   
+ for i in dailyRevenuePerProduct.take(10):print(i) 
+
+dailyRevenuePerProductSorted = dailyRevenuePerProduct.sortByKey()
+ 
+for i in dailyRevenuePerProductSorted.take(10):print(i)
+
+dailyRevenuePerProductName = dailyRevenuePerProductSorted.\
+map(lambda r :r[1]) 
+for i in dailyRevenuePerProductName.take(10):print(i)
+
+dailyRevenuePerProductName.coalesce(2).\
+saveAsTextFile("/user/harshal_h/dailyRevenuePerProduct_txt")
+
+
+
+
+	
+	

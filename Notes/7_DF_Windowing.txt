@@ -1,0 +1,83 @@
+ordersCSV = spark.read. \
+  csv('/public/retail_db/orders'). \
+  toDF('order_id', 'order_date', 'order_customer_id', 'order_status')
+
+orderItemsCSV = spark.read. \
+  csv('/public/retail_db/order_items'). \
+  toDF('order_item_id', 'order_item_order_id', 'order_item_product_id', 
+       'order_item_quantity', 'order_item_subtotal', 'order_item_product_price')
+
+from pyspark.sql.types import IntegerType, FloatType
+
+orders = ordersCSV. \
+  withColumn('order_id', ordersCSV.order_id.cast(IntegerType())). \
+  withColumn('order_customer_id', ordersCSV.order_customer_id.cast(IntegerType()))
+
+orders.printSchema()
+orders.show()
+
+orderItems = orderItemsCSV.\
+    withColumn('order_item_id', orderItemsCSV.order_item_id.cast(IntegerType())). \
+    withColumn('order_item_order_id', orderItemsCSV.order_item_order_id.cast(IntegerType())). \
+    withColumn('order_item_product_id', orderItemsCSV.order_item_product_id.cast(IntegerType())). \
+    withColumn('order_item_quantity', orderItemsCSV.order_item_quantity.cast(IntegerType())). \
+    withColumn('order_item_subtotal', orderItemsCSV.order_item_subtotal.cast(FloatType())). \
+    withColumn('order_item_product_price', orderItemsCSV.order_item_product_price.cast(FloatType()))
+
+orderItems.printSchema()
+
+from pyspark.sql.functions import *
+
+revenuePerOrder = orderItems.groupBy('order_item_order_id').agg(round(sum('order_item_subtotal'),2).alias('order_revenue')).show()
+
+orderItems.join(revenuePerOrder, orderItems.order_item_order_id == revenuePerOrder.order_item_order_id).show()
+
+orderItems.join(revenuePerOrder, orderItems.order_item_order_id == revenuePerOrder.order_item_order_id).\
+select(orderItems.order_item_order_id, 'order_item_subtotal','order_revenue').\
+show()
+
+Building spec object
+
+Windowing
+
+//alternate to DataFrame APIs
+
+Main package pyspark.sql.window
+It has classes such as Window and WindowSpec
+Window have APIs such as partitionBy, orderBy etc
+It return WindowSpec object. We can pass WindowSpec object to over on functions such as rank(), dense_rank(), sum() etc
+e.g.: rank().over(spec) where spec = Window.partitionBy(‘ColumnName’)
+Aggregations – sum, avg, min, max etc
+Ranking – rank, dense_rank, row_number etc
+Windowing – lead, lag etc
+
+
+from pyspark.sql.window import Window
+from pyspark.sql.functions import *
+
+format :
+select sum(field) over(partition By groupKey), f1, f2, .. from frame1
+
+
+from pyspark.sql.window import Window
+spec = Window.partitionBy('order_item_order_id')
+
+orderItems.select('order_item_order_id','order_item_subtotal',sum(orderItems.order_item_subtotal).over(spec).alias('order_revenue')).show()
+
+orderItems. \
+  withColumn('order_revenue', round(sum('order_item_subtotal').over(spec), 2)). \
+  show()
+  
+  
+Windowing function is usually used for time series problems
+
+spec = Window.partitionBy('order_item_order_id').orderBy(orderItems.order_item_subtotal.desc())
+orderItems.withColumn('next_order_item_revenue',lead('order_item_subtotal').over(spec)).show()
+ 
+spark.conf.set('spark.sql.shuffle.partitions', '2')
+ 
+orderItems. \
+withColumn('next_order_item_subtotal', lead('order_item_subtotal').over(spec)). \
+orderBy(orderItems.order_item_order_id, orderItems.order_item_subtotal.desc()). \
+drop('order_item_product_id','order_item_quantity','order_item_product_price').\
+show()
