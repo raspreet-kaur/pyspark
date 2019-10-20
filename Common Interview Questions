@@ -48,7 +48,21 @@ Explain the Apache Spark Architecture. How to Run Spark applications?
 	Spark Context is like a master and Spark workers are like slaves.	
 	Workers contain the executors to run the job. If any dependencies or arguments have to be passed then,
   Spark Context will take care of that. RDD’s will reside on the Spark Executors.
+
+What are Yarn Modes?
+	There are two deploy modes that can be used to launch Spark applications on YARN. 
+
+	In cluster mode, the Spark driver runs inside an application master process which is managed by YARN on the cluster,
+	and the client can go away after initiating the application. 
+	In client mode, the driver runs in the client process,
+	and the application master is only used for requesting resources from YARN.
 	
+	For standalone clusters, Spark currently supports two deploy modes. 
+	In client mode, the driver is launched in the same process as the client that submits the application.
+	In cluster mode, however, the driver is launched from one of the Worker processes inside the cluster,
+	and the client process exits as soon as it fulfills its responsibility of submitting the application without waiting
+	for the application to finish.
+
 Accumulators 
 	They are also known as Shared Variables. 	
 	Accumulators is a shared variable which can be used to implement counters with in the Spark application, primarily for sanity checks.
