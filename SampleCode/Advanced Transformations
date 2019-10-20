@@ -1,0 +1,81 @@
+mapPartitions
+APIs such as map, filter, flatMap work on individual records.
+We can implement any of this functionality using mapPartitions, but the difference is in its execution.
+
+For map, filter, flatMap – number of executions of lambda function is equal to number of records
+For mapPartitions – number of executions of lambda function is equal to number of partitions
+As part of the lambda function in mapPartitions
+  Process data as collection
+  Apply Python map or filter or flatten
+  Return a collection
+The elements from the collection returned from lambda function will be added to RDD
+Use cases where mapPartitions can perform better – Looking up into a database. Instead of creating connection for each record,
+we can establish connection once per for each partition (if looking up into database is required as part of data processing)
+Here is the example of getting word count using mapPartitions:
+
+  lines = sc.textFile("/public/randomtextwriter/part-m-00000")
+  def getWordTuples(i):
+    import itertools as it
+    wordTuples = map(lambda s: (s, 1), it.chain.from_iterable(map(lambda s: s.split(" "), i)))
+    return wordTuples
+
+  wordTuples = lines.mapPartitions(lambda i: getWordTuples(i))
+  for i in wordTuples.reduceByKey(lambda x, y: x + y).take(10):
+    print(i)
+    
+ranking using groupByKey
+groupByKey is a very powerful API which groups the values based on the key. It can be used to solve problems such as ranking.
+
+Task 1: Get top N products by price in each category
+Let us read products data into RDD
+Convert the data to (k, v) using product category id as key and the entire product record as value
+Use groupByKey
+Use first and get first record and read the second element to regular python collection variable (productsPerCategory)
+Develop function to get top N products by price in that list
+Validate the function using productsPerCategory
+Invoke the function on output of groupByKey as part of flatMap
+
+  products = sc.textFile("/public/retail_db/products")
+  productsFiltered = products.filter(lambda p: p.split(",")[4] != "")
+  productsMap = productsFiltered.map(lambda p: (int(p.split(",")[1]), p))
+  productsGBCategory = productsMap.groupByKey()
+
+  # p = list(productsGBCategory.first()[1])
+
+  def getTopNProducts(products, topN):
+    return sorted(products, key=lambda k: float(k.split(",")[4]), reverse=True)[:topN]
+
+  # getTopNProducts(p, 3)
+
+  topNProductsByCategory = productsGBCategory.flatMap(lambda p: getTopNProducts(list(p[1]), 3))
+  for i in topNProductsByCategory.take(10):
+    print(i)
+    
+    
+Task 2: Get top N Priced products in each category
+Let us read products data into RDD
+Convert the data to (k, v) using product category id as key and the entire product record as value
+Use groupByKey
+Use first and get first record and read the second element to regular python collection variable (productsPerCategory)
+Develop function to get top N priced products in that list (simulating dense rank)
+Validate the function using productsPerCategory
+Invoke the function on output of groupByKey as part of flatMap
+
+  products = sc.textFile("/public/retail_db/products")
+  productsFiltered = products.filter(lambda p: p.split(",")[4] != "")
+  productsMap = productsFiltered.map(lambda p: (int(p.split(",")[1]), p))
+  productsGBCategory = productsMap.groupByKey()
+
+  # p = list(productsGBCategory.first()[1])
+
+  def getTopNPricedProducts(products, topN):
+    import itertools as it
+    productPrices = sorted(set(map(lambda p: float(p.split(",")[4]), products)), reverse=True)[:topN]
+    productsSorted = sorted(products, key=lambda k: float(k.split(",")[4]), reverse=True)
+    return it.takewhile(lambda product: float(product.split(",")[4]) in productPrices, productsSorted)
+
+  # getTopNProducts(p, 3)
+
+  topNPricedProductsByCategory = productsGBCategory.flatMap(lambda p: getTopNPricedProducts(list(p[1]), 3))
+  for i in topNPricedProductsByCategory.take(10):
+    print(i)
