@@ -1,0 +1,39 @@
+1) AVRO:-
+
+It is row major format.
+Its primary design goal was schema evolution.
+In the avro format, we store schema separately from data. Generally avro schema file (.avsc) is maintained.
+Avro formatted data can be described through language independent schema.
+Hence Avro formatted data can be shared across applications using different languages.
+Avro stores the schema in header of file so data is self-describing.
+Avro formatted files are splittable and compressible and hence it’s a good candidate for data storage in Hadoop ecosystem.
+
+Schema Evolution – Schema used to read a Avro file need not be same as schema which was used to write the files.
+This makes it possible to add new fields.
+
+2) ORC
+
+Column oriented storage format.
+Originally it is Hive's Row Columnar file. Now improved as Optimized RC (ORC)
+Schema is with the data, but as a part of footer.
+Data is stored as row groups and stripes.
+Each stripe maintains indexes and stats about data it stores.
+
+3) Parquet
+
+Similar to ORC. Based on google dremel
+Schema stored in footer
+
+Column oriented storage format.
+Columnar formats works well where only few columns are required in query/ analysis.
+Only required columns would be fetched / read, it reduces the disk I/O.
+Has integrated compression and indexes.Parquet provides very good compression upto 75% when used with compression formats like snappy.
+Parquet is well suited for data warehouse kind of solutions where aggregations are required on certain column over a huge set of data.
+Parquet can be read and write using Avro API and Avro Schema.
+It also provides predicate pushdown, thus reducing further disk I/O cost.
+----------------------------------------------------------------------------------------------------------------------------------
+
+Around 10 GB of CSV data compressed to 1.1 GB of ORC with ZLIB compression and same data to 1.2 GB of Parquet GZIP.
+Both file formats with SNAPPY compression, used around 1.6 GB of space.
+
+Conversion speed wise ORC was little better it took 9 min where as parquet took 10 plus min.
