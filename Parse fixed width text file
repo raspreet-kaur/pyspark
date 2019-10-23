@@ -1,6 +1,7 @@
+
 Spark's substr function can handle fixed-width columns, for example:
 
-df = spark.read.text("/tmp/sample.txt")
+df = spark.read.text("SampleFiles/fixed_width_file.txt")
 df.select(
     df.value.substr(1,3).alias('id'),
     df.value.substr(4,8).alias('date'),
