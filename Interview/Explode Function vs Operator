@@ -10,7 +10,8 @@ Dataset<Row> explode / flatMap operator (method)
 explode operator is almost the explode function.
 
 From the scaladoc:
-explode returns a new Dataset where a single column has been expanded to zero or more rows by the provided function. This is similar to a LATERAL VIEW in HiveQL. All columns of the input row are implicitly joined with each value that is output by the function.
+explode returns a new Dataset where a single column has been expanded to zero or more rows by the provided function. 
+This is similar to a LATERAL VIEW in HiveQL. All columns of the input row are implicitly joined with each value that is output by the function.
 
 ds.flatMap(_.words.split(" "))
 Please note that (again quoting the scaladoc):
