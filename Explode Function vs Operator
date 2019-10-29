@@ -1,0 +1,18 @@
+spark.sql.functions.explode
+explode function creates a new row for each element in the given array or map column (in a DataFrame).
+
+val signals: DataFrame = spark.read.json(signalsJson)
+signals.withColumn("element", explode($"data.datapayload"))
+explode creates a Column.
+
+-------------------------------------------------
+Dataset<Row> explode / flatMap operator (method)
+explode operator is almost the explode function.
+
+From the scaladoc:
+explode returns a new Dataset where a single column has been expanded to zero or more rows by the provided function. This is similar to a LATERAL VIEW in HiveQL. All columns of the input row are implicitly joined with each value that is output by the function.
+
+ds.flatMap(_.words.split(" "))
+Please note that (again quoting the scaladoc):
+
+Deprecated (Since version 2.0.0) use flatMap() or select() with functions.explode() instead
