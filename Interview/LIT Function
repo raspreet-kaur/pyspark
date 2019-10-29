@@ -1,0 +1,39 @@
+Spark SQL functions lit() and typedLit() are used to add a new column by assigning a literal or
+constant value to Spark DataFrame. Both functions return Column as return type.
+Both of these are available in Spark by importing org.apache.spark.sql.functions
+
+ex-
+val df2 = df.select(col("EmpId"),col("Salary"),lit("1").as("lit_value1"))
+df2.show()
+
+val df3 = df2.withColumn("lit_value2",
+    when(col("Salary") >=40000 && col("Salary") <= 50000,
+       lit("100").cast(IntegerType))
+      .otherwise(lit("200").cast(IntegerType))
+  )
+  df3.show()
+  
+  Difference between lit and typedLit is that typedLit function can handle parameterized scala types e.g.: List, Seq and Map.
+  ex-
+  val df4 = df3.withColumn("typedLit_seq",typedLit(Seq(1, 2, 3)))
+    .withColumn("typedLit_map",typedLit(Map("a" -> 1, "b" -> 2)))
+    .withColumn("typedLit_struct",typedLit(("a", 2, 1.0)))
+df4.printSchema()
+df4.show()
+
+df4.printSchema() outputs below schema
+
+root
+ |-- EmpId: string (nullable = true)
+ |-- Salary: integer (nullable = false)
+ |-- lit_value1: string (nullable = false)
+ |-- lit_value2: integer (nullable = true)
+ |-- typedLit_seq: array (nullable = false)
+ |    |-- element: integer (containsNull = false)
+ |-- typedLit_map: map (nullable = false)
+ |    |-- key: string
+ |    |-- value: integer (valueContainsNull = false)
+ |-- typedLit_struct: struct (nullable = false)
+ |    |-- _1: string (nullable = true)
+ |    |-- _2: integer (nullable = false)
+ |    |-- _3: double (nullable = false)
