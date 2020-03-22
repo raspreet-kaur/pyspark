@@ -1,5 +1,7 @@
-At times, we might have to deal with text data where line delimiter is different than new line character. like comments with multiple new line characters.
-In this case we need to use HDFS APIs to read data from files with custom line delimiter into RDD and process further (either using transformations/actions or data frame operations)
+At times, we might have to deal with text data where line delimiter is different than new line character. like comments 
+with multiple new line characters.
+In this case we need to use HDFS APIs to read data from files with custom line delimiter into RDD and process further
+(either using transformations/actions or data frame operations)
 
 path = "/public/yelp-dataset/yelp_review.csv"
 
