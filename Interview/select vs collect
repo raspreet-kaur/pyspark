@@ -1,10 +1,12 @@
 https://stackoverflow.com/questions/44174747/spark-dataframe-collect-vs-select
 
-Collect (Action) - Return all the elements of the dataset as an array at the driver program. This is usually useful after a filter or other operation that returns a sufficiently small subset of the data.
+Collect (Action) - Return all the elements of the dataset as an array at the driver program.
+This is usually useful after a filter or other operation that returns a sufficiently small subset of the data.
 
 Select(*cols) (transformation) - Projects a set of expressions and returns a new DataFrame.
 
-Parameters: cols – list of column names (string) or expressions (Column). If one of the column names is ‘*’, that column is expanded to include all columns in the current DataFrame.**
+Parameters: cols – list of column names (string) or expressions (Column). If one of the column names is ‘*’,
+that column is expanded to include all columns in the current DataFrame.**
 
 df.select('*').collect()
 [Row(age=2, name=u'Alice'), Row(age=5, name=u'Bob')]
@@ -12,7 +14,9 @@ df.select('name', 'age').collect()
 [Row(name=u'Alice', age=2), Row(name=u'Bob', age=5)]
 df.select(df.name, (df.age + 10).alias('age')).collect()
 [Row(name=u'Alice', age=12), Row(name=u'Bob', age=15)]
-Execution select(column-name1,column-name2,etc) method on a dataframe, returns a new dataframe which holds only the columns which were selected in the select() function.
+
+Execution select(column-name1,column-name2,etc) method on a dataframe, returns a new dataframe which holds only the columns
+which were selected in the select() function.
 
 e.g. assuming df has several columns including "name" and "value" and some others.
 
