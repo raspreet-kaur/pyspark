@@ -1,0 +1,36 @@
+#######     WHAT IS PREDICATE PUSHDOWN?    ########
+The basic idea of predicate pushdown is that certain parts of SQL queries (the predicates) can be “pushed” to where the data lives.
+This optimization can drastically reduce query/processing time by filtering out data earlier rather than later.
+Depending on the processing framework, predicate pushdown can optimize your query by doing things like filtering data before it
+is transferred over the network, filtering data before loading into memory, or skipping reading entire files or chunks of files.
+
+A “predicate” (in mathematics and functional programming) is a function that returns a boolean (true or false).
+In SQL queries predicates are usually encountered in the WHERE clause and are used to filter data.
+
+######    Predicate Pushdown in Hive    ########
+Generally when executing SQL queries, a JOIN will be performed before the filtering used in the WHERE clause.
+In Hive (MapReduce), predicate pushdown is used to filter data in the map phase before sending over the network to the reduce phase.
+
+For example in this query the WHERE a.country = 'Argentina' will be evaluated in the map phase, reducing the amount data sent over the 
+network:
+    SELECT
+      a.*
+    FROM
+      table1 a
+    JOIN 
+      table2 b ON a.id = b.id
+    WHERE
+      a.country = 'Argentina';
+
+######    Predicate Pushdown in Parquet/ORC files    ########
+Parquet and ORC files maintain various stats about each column in different chunks of data (such as min and max values). 
+Programs reading these files can use these indexes to determine if certain chunks, and even entire files, need to be read at all. 
+This allows programs to potentially skip over huge portions of the data during processing.
+
+######    Predicate Pushdown in Spark    ########
+Spark will attempt to move filtering of data as close to the source as possible to avoid loading unnecessary data into memory.
+
+######    Predicate Pushdown in Amazon Redshift Spectrum    ########
+Amazon Redshift Spectrum resides on dedicated servers separate from actual Redshift clusters. Redshift Spectrum will use predicate
+pushdown to filter data at the Redshift Spectrum layer to reduce data transfer, storage, and compute resources on the Redshift cluster
+itself.
