@@ -1,3 +1,8 @@
 Can we trigger automated clean-ups in Spark?
 Answer: Yes, we can trigger automated clean-ups in Spark to handle the accumulated metadata.
 It can be done by setting the parameters, namely, “spark.cleaner.ttl.” 
+
+
+What is another method than “Spark.cleaner.ttl” to trigger automated clean-ups in Spark?
+Answer: Another method than “Spark.clener.ttl” to trigger automated clean-ups in Spark is by dividing the long-running jobs into
+different batches and writing the intermediary results on the disk.
