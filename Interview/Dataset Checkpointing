@@ -1,0 +1,19 @@
+Checkpointing is actually a feature of Spark Core (that Spark SQL uses for distributed computations) 
+that allows a driver to be restarted on failure with previously computed state of a distributed computation described as an RDD.
+That has been successfully used in Spark Streaming - the now-obsolete Spark module for stream processing based on RDD API.
+
+Checkpointing truncates the lineage of a RDD to be checkpointed.
+That has been successfully used in Spark MLlib in iterative machine learning algorithms like ALS.
+
+Dataset checkpointing in Spark SQL uses checkpointing to truncate the lineage of the underlying RDD of a Dataset being checkpointed.
+
+Checkpointing can be eager or lazy per eager flag of checkpoint operator. Eager checkpointing is the default checkpointing and happens
+immediately when requested.
+Lazy checkpointing does not and will only happen when an action is executed.
+
+Using Dataset checkpointing requires that you specify the checkpoint directory. The directory stores the checkpoint files for RDDs
+to be checkpointed. Use SparkContext.setCheckpointDir to set the path to a checkpoint directory.
+
+Checkpointing can be local or reliable which defines how reliable the checkpoint directory is. Local checkpointing uses executor
+storage to write checkpoint files to and due to the executor lifecycle is considered unreliable. Reliable checkpointing uses a reliable
+data storage like Hadoop HDFS.
