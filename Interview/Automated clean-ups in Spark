@@ -1,0 +1,3 @@
+Can we trigger automated clean-ups in Spark?
+Answer: Yes, we can trigger automated clean-ups in Spark to handle the accumulated metadata.
+It can be done by setting the parameters, namely, “spark.cleaner.ttl.” 
