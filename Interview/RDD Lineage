@@ -1,0 +1,27 @@
+RDD Lineage (aka RDD operator graph or RDD dependency graph) is a graph of all the parent RDDs of an RDD. 
+It is built as a result of applying transformations to the RDD and creates a logical execution plan.
+The execution DAG or physical execution plan is the DAG of stages.
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+Whenever a series of transformations are performed on an RDD, they are not evaluated immediately, but lazily.
+
+When a new RDD has been created from an existing RDD, that new RDD contains a pointer to the parent RDD.
+Similarly, all the dependencies between the RDDs will be logged in a graph, rather than the actual data. 
+This graph is called the lineage graph.
+
+For eg., consider the below operations:
+
+1. Create a new RDD from a text file - first RDD
+2. Apply map operation on first RDD to get second RDD
+3. Apply filter operation on second RDD to get third RDD
+4. Apply count operation on third RDD to get fourth RDD
+
+Lineage graph of all these operations looks like:
+
+First RDD ---> Second RDD (applying map) ---> Third RDD (applying filter) ---> Fourth RDD (applying count)
+
+This lineage graph will be useful in case if any of the partitions are lost. Spark can replay the transformation on 
+that partition using the lineage graph existing in DAG (Directed Acyclic Graph) to achieve the same computation, rather than replicating
+the data cross different nodes as in HDFS.
