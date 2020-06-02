@@ -1,0 +1,25 @@
+What decides number of mappers and reducers of an operation in Spark
+
+
+t depends on how your data is partitioned. In Spark SQL, when you read data from the source the number of partitions will depend on
+the size of your dataset,number of input files and on the number of cores that you have available. Spark will determine how many 
+partitions should be created and so in the first stage of your job this will be the number of 'mappers tasks'. Then if you perform
+transformation that induces shuffle (like groupBy, join, dropDuplicates, ...), the number of 'reducers tasks' will be 200 by default,
+because Spark will create 200 partitions. You can change that by this setting:
+
+sparkSession.conf.set("spark.sql.shuffle.partitions", n)
+where n is the number of partitions that you want to use (number of tasks that you want to have after each shuffle). Here is a link
+to configuration options in Spark documentation which mentions this setting.
+
+
+
+The following options can also be used to tune the performance of query execution. It is possible that these options will be deprecated in future release as more optimizations are performed automatically.
+
+Property Name	Default	Meaning
+spark.sql.files.maxPartitionBytes	134217728 (128 MB)	The maximum number of bytes to pack into a single partition when reading files.
+spark.sql.files.openCostInBytes	4194304 (4 MB)	The estimated cost to open a file, measured by the number of bytes could be scanned in the same time. This is used when putting multiple files into a partition. It is better to over-estimated, then the partitions with small files will be faster than partitions with bigger files (which is scheduled first).
+spark.sql.broadcastTimeout	300	
+Timeout in seconds for the broadcast wait time in broadcast joins
+
+spark.sql.autoBroadcastJoinThreshold	10485760 (10 MB)	Configures the maximum size in bytes for a table that will be broadcast to all worker nodes when performing a join. By setting this value to -1 broadcasting can be disabled. Note that currently statistics are only supported for Hive Metastore tables where the command ANALYZE TABLE <tableName> COMPUTE STATISTICS noscan has been run.
+spark.sql.shuffle.partitions	200	Configures the number of partitions to use when shuffling data for joins or aggregations.
