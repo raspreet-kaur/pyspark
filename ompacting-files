@@ -1,0 +1,17 @@
+https://mungingdata.com/apache-spark/compacting-files/
+
+
+Let’s use the repartition() method to shuffle the data and write it to another directory with five 0.92 GB files.
+
+val df = spark.read.parquet("s3_path_with_the_data")
+val repartitionedDF = df.repartition(5)
+repartitionedDF.write.parquet("another_s3_path")
+The repartition() method makes it easy to build a folder with equally sized files.
+
+
+
+spark.sql("SET hive.merge.sparkfiles = true")  
+spark.sql("SET hive.merge.mapredfiles = true")
+spark.sql("SET hive.merge.mapfiles = true")
+spark.sql("set hive.merge.smallfiles.avgsize = 128000000")
+spark.sql("set hive.merge.size.per.task = 128000000")
