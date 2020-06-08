@@ -1,0 +1,9 @@
+Difference between InsertInto and saveAsTableS
+SaveAsTable will drop the tble incase of overWrite , dropping the DDL and will create a managed table for the new data to load to
+InsertInto is a safer option, in case of overwrite , it will retain the table DDl and location , thereby maintaining the tablestructure
+
+
+Difference between parquet and AVRO
+in parquetformat, schema is embedded, whereas in Avro schema is stored separetly either in avsc(avro schema )or json format thereby
+enabling to update it to support AVRO schema evolution. there are different types of schema evolution - forward , backward and full.
+Default values are added in case of newly added columns . In case of backward compatibility,  
